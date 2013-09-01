@@ -257,13 +257,13 @@ $(function () {
 
       // actually send the request to Twitter
       currentXhr = $.ajax({
-        url: "http://search.twitter.com/search.json",
+        url: "search.php",
         data: {
           rpp: 100,
           q: lastSearchTerm,
           geocode: geocode.join(",")
         },
-        dataType: "jsonp",
+        dataType: "json",
         complete: function () {
           currentXhr = null;
         },
