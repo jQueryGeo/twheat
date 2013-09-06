@@ -268,9 +268,9 @@ $(function () {
           currentXhr = null;
         },
         success: function (tweets) {
-          if (searchTerm == lastSearchTerm && tweets.results) {
-            // if we have results, search each of them for the geo or location property
-            $.each(tweets.results, function () {
+          if (searchTerm == lastSearchTerm && tweets.statuses) {
+            // if we have results, search each of them for the coordinates or place property
+            $.each(tweets.statuses, function () {
               appendTweet( this );
             });
           }
@@ -304,22 +304,27 @@ $(function () {
         coordinates: [ 0, 0 ]
       },
       properties: {
-        tweet: "<b>" + tweet.from_user + "</b>: " + tweet.text
+        tweet: "<b>" + tweet.user.screen_name + "</b>: " + tweet.text
       }
     };
 
-    if (tweet.geo) {
-      // if we have a geo property, flip the coordinates because Twitter search isn't
+    if (tweet.coordinates) {
+      // if we have a coordinates property, we can add this tweet to the map
       // in proper GeoJSON spec order
       // Twitter uses [lat, lon] instead of [lon, lat]
-      feature.geometry.coordinates = [
-        tweet.geo.coordinates[1],
-        tweet.geo.coordinates[0]
-      ];
+      feature.geometry = tweet.coordinates;
 
       appendTweetShape( feature );
-    } else if ( tweet.location ) {
+    } else if ( tweet.place && tweet.place.bounding_box ) {
+      // otherwise, get the center of the the place's
+      // their bounding_box property is actually a polygon
+      var placeCenter = $.geo.centroid( tweet.place.bounding_box );
+
+      feature.geometry.coordinates = placeCenter;
+      appendTweetShape( feature );
+
       // otherwise, attempt to geocode the location property
+      /*
       $.ajax({
         url: "http://open.mapquestapi.com/nominatim/v1/search",
         data: {
@@ -348,6 +353,7 @@ $(function () {
           }, 1000 );
         }
       });
+      */
     }
   }
 
