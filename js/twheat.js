@@ -264,7 +264,7 @@ $(function () {
           geocode: geocode.join(",")
         },
         dataType: "json",
-        complete: function () {
+        complete: function (result) {
           currentXhr = null;
         },
         success: function (tweets) {
@@ -279,7 +279,7 @@ $(function () {
             $("#ajaxIndicator").css("visibility", "hidden");
           }, 1000 );
         },
-        error: function() {
+        error: function(er) {
           // oops, Twitter search failed
           $("#ajaxIndicator").css("visibility", "hidden");
         }
