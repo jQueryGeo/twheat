@@ -24,6 +24,7 @@ $(function () {
           }
         ];
       
+        /*
     for ( i = 0; i < 11; i++ ) {
       // for each hue breakpoint, create a new shingled service
       // later, we will put tweets in these depending on how many other tweets around
@@ -33,6 +34,7 @@ $(function () {
         src: ""
       } );
     }
+    */
 
     map = $("#map").geomap({
       center: center || [-71.0597732, 42.3584308],
@@ -255,35 +257,80 @@ $(function () {
       clearTimeout( timeoutTweetsMapped );
       $("#ajaxIndicator").css("visibility", "visible");
 
-      // actually send the request to Twitter
-      currentXhr = $.ajax({
-        url: "search.php",
-        data: {
-          rpp: 100,
-          q: lastSearchTerm,
-          geocode: geocode.join(",")
-        },
-        dataType: "json",
-        complete: function (result) {
-          currentXhr = null;
-        },
-        success: function (tweets) {
-          if (searchTerm == lastSearchTerm && tweets.statuses) {
-            // if we have results, search each of them for the coordinates or place property
-            $.each(tweets.statuses, function () {
-              appendTweet( this );
-            });
-          }
+      if (window.location.host.match(/localhost/)) {
+        setTimeout(function () {
+          appendTweet({
+                "created_at": "Mon May 26 01:54:09 +0000 2014",
+                "id": 470744669689618400,
+                "id_str": "470744669689618432",
+                "text": "Live tweeting from dinner with the most right-wing conservative grandparents tonight",
+                "source": "<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+                "user": {
+                  "name": " K-10",
+                  "screen_name": "KristyKreme_13",
+                  "location": "JMU",
+                  "description": "I like animals and jokes and animal jokes",
+                  "time_zone": "Atlantic Time (Canada)",
+                  "geo_enabled": true,
+                  "lang": "en",
+                  "profile_image_url": "http://pbs.twimg.com/profile_images/466751675957387264/zsIh2fEn_normal.jpeg",
+                },
+                "geo": {
+                  "type": "Point",
+                  "coordinates": [43.6259462, -71.29408846]
+                },
+                "coordinates": {
+                  "type": "Point",
+                  "coordinates": [-71.29408846, 43.6259462]
+                },
+                "place": {
+                  "id": "226b21641df42460",
+                  "url": "https://api.twitter.com/1.1/geo/id/226b21641df42460.json",
+                  "place_type": "admin",
+                  "name": "New Hampshire",
+                  "full_name": "New Hampshire, USA",
+                  "country_code": "US",
+                  "country": "United States",
+                  "bounding_box": {
+                    "type": "Polygon",
+                    "coordinates": [[[-72.557247, 42.696978], [-70.575095, 42.696978], [-70.575095, 45.305476], [-72.557247, 45.305476]]]
+                  }
+                },
+                "lang": "en"
+              });
+        }, 500);
+      } else {
+        // actually send the request to Twitter
+        currentXhr = $.ajax({
+          url: "search.php",
+          data: {
+            rpp: 100,
+            q: lastSearchTerm//,
+            //geocode: geocode.join(",")
+          },
+          dataType: "json",
+          complete: function (result) {
+            currentXhr = null;
+          },
+          success: function (tweets) {
+            if (searchTerm == lastSearchTerm && tweets.statuses) {
+              // if we have results, search each of them for the coordinates or place property
+              $.each(tweets.statuses, function () {
+                appendTweet(this);
+              });
+            }
 
-          timeoutTweetsMapped = setTimeout( function() {
+            timeoutTweetsMapped = setTimeout(function () {
+              $("#ajaxIndicator").css("visibility", "hidden");
+            }, 1000);
+          },
+          error: function (er) {
+            // oops, Twitter search failed
             $("#ajaxIndicator").css("visibility", "hidden");
-          }, 1000 );
-        },
-        error: function(er) {
-          // oops, Twitter search failed
-          $("#ajaxIndicator").css("visibility", "hidden");
-        }
-      });
+          }
+        });
+
+      }
     }
   }
 
