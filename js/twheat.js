@@ -8,7 +8,6 @@ $(function () {
       
       twitterButtonHtml = '<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-via="ryanttb">Tweet</a><script src="//platform.twitter.com/widgets.js">\x3C/script>'
       timeoutRefresh = null,
-      timeoutTweetsMapped = null,
       canvas = document.createElement( 'canvas' ),
       heatmap = null,
       data = [];
@@ -272,11 +271,13 @@ $(function () {
           ],
           lastSearchTerm = searchTerm;
 
-      clearTimeout( timeoutTweetsMapped );
       $("#ajaxIndicator").css("visibility", "visible");
 
       if (window.location.host.match(/localhost/)) {
-        appendTweet(genTweet());
+        setTimeout( function() {
+          appendTweet(genTweet());
+          $("#ajaxIndicator").css("visibility", "hidden");
+        }, 500 );
       } else {
         // actually send the request to Twitter
         currentXhr = $.ajax({
@@ -289,6 +290,7 @@ $(function () {
           dataType: "json",
           complete: function (result) {
             currentXhr = null;
+            $("#ajaxIndicator").css("visibility", "hidden");
           },
           success: function (tweets) {
             if (searchTerm == lastSearchTerm && tweets.statuses) {
@@ -297,14 +299,9 @@ $(function () {
                 appendTweet(this);
               });
             }
-
-            timeoutTweetsMapped = setTimeout(function () {
-              $("#ajaxIndicator").css("visibility", "hidden");
-            }, 1000);
           },
           error: function ( err ) {
             // oops, Twitter search failed
-            $("#ajaxIndicator").css("visibility", "hidden");
           }
         });
 
