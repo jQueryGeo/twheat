@@ -322,38 +322,6 @@ $(function () {
 
       feature.geometry.coordinates = placeCenter;
       appendTweetShape( feature );
-
-      // otherwise, attempt to geocode the location property
-      /*
-      $.ajax({
-        url: "http://open.mapquestapi.com/nominatim/v1/search",
-        data: {
-          format: "json",
-          q: tweet.location
-        },
-        dataType: "jsonp",
-        jsonp: "json_callback",
-        success: function (results) {            
-          if (results && results.length > 0) {
-            // if found, grab the location's lon & lat
-            if (results[0].lon && results[0].lat) {
-              feature.geometry.coordinates = [
-                results[0].lon,
-                results[0].lat
-              ];
-
-              appendTweetShape( feature );
-            }
-          }
-
-          // delay hiding the ajax indicator for another second
-          clearTimeout( timeoutTweetsMapped );
-          timeoutTweetsMapped = setTimeout( function() {
-            $("#ajaxIndicator").css("visibility", "hidden");
-          }, 1000 );
-        }
-      });
-      */
     }
   }
 
