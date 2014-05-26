@@ -471,7 +471,7 @@ $(function () {
       },
       coordinates: {
         type: 'Point',
-        coordinates: [ c[0], c[1] ]
+        coordinates: [ c[0] - Math.random()/2, c[1] + Math.random()/2 ]
       },
       place: {
         id: '' + time,
