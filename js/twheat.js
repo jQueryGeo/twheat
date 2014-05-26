@@ -13,10 +13,11 @@ $(function () {
       data = [];
 
   try {
+    // heatmap test
     heatmap = createWebGLHeatmap( {
       canvas: canvas,
-      width: 640,
-      height: 480
+      width: 1,
+      height: 1
     } );
   } catch ( err ) {
     console.log( err );
@@ -276,6 +277,7 @@ $(function () {
       if (window.location.host.match(/localhost/)) {
         setTimeout( function() {
           appendTweet(genTweet());
+          appendTweet(genTweet());
           $("#ajaxIndicator").css("visibility", "hidden");
         }, 500 );
       } else {
@@ -352,30 +354,10 @@ $(function () {
     // pick the appropriate hue service based on number of tweets around
     // and add this tweet to EACH hue service up to that point
     // this will add a bunch of bubbles per tweet as more tweets are found
-    /*
     if ( timeoutRefresh ) {
       clearTimeout( timeoutRefresh );
       timeoutRefresh = null;
     }
-    */
-
-    /*
-    var searchService = $( "#h240" );
-
-    for ( i = 0; i < 11; i++ ) {
-      var hue = 240 - ( i * 24 ),
-          hueService = $( "#h" + hue ),
-          impact = ( hue + 16) / 2 - Math.floor( i / 2 ), //hue + 16 - i,
-          radius = impact, //( hue + 16) / 2 - Math.floor( i / 2 ),
-          existing = searchService.geomap( "find", feature.geometry, radius );
-      
-      hueService.geomap( "append", feature, false );
-
-      if ( existing.length <= i ) {
-        break;
-      }
-    }
-    */
 
     // even though we may have appended four shapes for a medium hotness
     // tweet, we have only processed one actual tweet, update appendedCount & UI
@@ -383,14 +365,11 @@ $(function () {
     $("#appendedCount").text(appendedCount + " tweets mapped!");
 
     data.push( feature );
-    $( '.heatmap-service' ).geomap( 'refresh' );
 
-    /*
     timeoutRefresh = setTimeout( function( ) {
       timeoutRefresh = null;
       $('.heatmap-service' ).geomap( 'refresh' );
-    }, 500 );
-    */
+    }, 33 );
   }
 
   function autoSearch() {
@@ -471,6 +450,8 @@ $(function () {
     var time = $.now();
     var name = meat();
     var c = map.geomap('option', 'center');
+    var xoff = Math.random() > 0.5 ? 1 : -1;
+    var yoff = Math.random() > 0.5 ? 1 : -1;
 
     return {
       created_at: 'Mon May 26 01:54:09 +0000 2014',
@@ -493,7 +474,7 @@ $(function () {
       },
       coordinates: {
         type: 'Point',
-        coordinates: [ c[0] + Math.random()/2, c[1] + Math.random()/2 ]
+        coordinates: [ c[0] + xoff * Math.random()/4, c[1] + yoff * Math.random()/4 ]
       },
       place: {
         id: '' + time,
