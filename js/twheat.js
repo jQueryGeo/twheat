@@ -27,49 +27,49 @@ $(function () {
     // create a map using an optional center and zoom
     // we're re-adding the default basemap because we're adding extra services on top of it
     var services = [
-          {
-            type: "tiled",
-            src: function( view ) {
-                return "http://otile" + ((view.index % 4) + 1) + ".mqcdn.com/tiles/1.0.0/osm/" + view.zoom + "/" + view.tile.column + "/" + view.tile.row + ".png";
-            },
-            attr: "<p>Tiles Courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'></p>"
-          },
-          {
-            type: 'shingled',
-            class: 'heatmap-service',
-            style: {
-              opacity: .98
-            },
-            src: function( view ) {
-              canvas.width = 0;
-              canvas.height = 0;
-              var data = $( '.heatmap-service' ).geomap( 'find', '*' );
+      {
+        type: "tiled",
+        src: function( view ) {
+            return "http://otile" + ((view.index % 4) + 1) + ".mqcdn.com/tiles/1.0.0/osm/" + view.zoom + "/" + view.tile.column + "/" + view.tile.row + ".png";
+        },
+        attr: "<p>Tiles Courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'></p>"
+      },
+      {
+        type: 'shingled',
+        class: 'heatmap-service',
+        style: {
+          opacity: .98
+        },
+        src: function( view ) {
+          canvas.width = 0;
+          canvas.height = 0;
+          var data = $( '.heatmap-service' ).geomap( 'find', '*' );
 
-              if ( !map || !heatmap || data.length === 0 ) {
-                return canvas.toDataURL( 'image/png' );
-              }
-
-              // since the pixel points can change at any time,
-              // we need to keep recreating the heatmap and adding
-              // re-calculated pixel points
-              heatmap = createWebGLHeatmap( {
-                canvas: canvas,
-                width: view.width,
-                height: view.height
-              } );
-
-              for ( var i = 0, pixelPos; i < data.length; i++ ) {
-                pixelPos = map.geomap( 'toPixel', data[ i ].geometry.coordinates );
-                heatmap.addPoint( pixelPos[ 0 ], pixelPos[ 1 ], 64, 1 );
-              }
-
-              heatmap.update();
-              heatmap.display();
-              return canvas.toDataURL( 'image/png' );
-            }
+          if ( !map || !heatmap || data.length === 0 ) {
+            return canvas.toDataURL( 'image/png' );
           }
-        ];
-      
+
+          // since the pixel points can change at any time,
+          // we need to keep recreating the heatmap and adding
+          // re-calculated pixel points
+          heatmap = createWebGLHeatmap( {
+            canvas: canvas,
+            width: view.width,
+            height: view.height
+          } );
+
+          for ( var i = 0, pixelPos; i < data.length; i++ ) {
+            pixelPos = map.geomap( 'toPixel', data[ i ].geometry.coordinates );
+            heatmap.addPoint( pixelPos[ 0 ], pixelPos[ 1 ], 64, 1 );
+          }
+
+          heatmap.update();
+          heatmap.display();
+          return canvas.toDataURL( 'image/png' );
+        }
+      }
+    ];
+  
     map = $("#map").geomap({
       center: center || [-71.0597732, 42.3584308],
       zoom: zoom || 10,
@@ -78,26 +78,7 @@ $(function () {
 
       services: services,
 
-      mode: "point",
-      scroll: "off",
-      cursors: {
-        point: "default"
-      },
-
-      dblclick: function( e, geo ) { 
-        // prevent the default dblclick zoom behavior,
-        // we want to change the URL so it can be tweeted
-        e.preventDefault( );
-
-        var zoom = map.geomap( "option", "zoom" );
-        if ( zoom < 16 ) {
-          window.location.search = 
-            "q=" + encodeURIComponent($("#twit input").val()) +
-            "&l=" + encodeURIComponent($("#loc input").val()) +
-            "&center=" + $.geo.proj.toGeodetic( geo.coordinates ) +
-            "&zoom=" + ( map.geomap( "option", "zoom" ) + 1 );
-        }
-      },
+      mode: 'click',
 
       move: function (e, geo) {
         // when the user moves, search for appended tweets
@@ -145,13 +126,23 @@ $(function () {
             }).show();
           }
         }
+      },
+
+      bboxchange: function( e, geo ) {
+        var state = $.bbq.getState( );
+        var center = map.geomap( 'option', 'center' );
+
+        $.extend( state, {
+          lon: center[ 0 ].toFixed( 3 ),
+          lat: center[ 1 ].toFixed( 3 ),
+          zoom: map.geomap( 'option', 'zoom' )
+        } );
+
+        $.bbq.pushState( state );
       }
     });
 
     $( '.heatmap-service' ).geomap( 'option', 'shapeStyle', { width: 0, height: 0 } );
-
-    // set the zoom input the map's zoom
-    //$( "#zoom input" ).val( map.geomap( "option", "zoom" ) ).css( "visibility", "visible" );
 
     if ( searchTerm && !searching ) {
       // kick off an autoSearch if we have a search term
@@ -163,6 +154,7 @@ $(function () {
     e.preventDefault();
 
     $("#ajaxIndicator").css("visibility", "visible");
+    var q = $("#loc input").val();
 
     // when the user clicks the location search button,
     // send a request to nominatim for an OpenStreatMap data search
@@ -170,7 +162,7 @@ $(function () {
       url: "http://open.mapquestapi.com/nominatim/v1/search",
       data: {
         format: "json",
-        q: $("#loc input").val()
+        q: q
       },
       dataType: "jsonp",
       jsonp: "json_callback",
@@ -179,68 +171,68 @@ $(function () {
       },
       success: function (results) {            
         if (results && results.length > 0) {
-          // if we get a result, relaunch the app to the new location with the old search
-          // this will allow users to tweet their map
-          window.location.search = 
-            "q=" + encodeURIComponent($("#twit input").val()) +
-            "&l=" + encodeURIComponent($("#loc input").val()) +
-            "&center=" + results[0].lon + "," + results[0].lat +
-            "&zoom=" + ( map.geomap("option", "zoom") );
+          var state = $.bbq.getState();
+
+          $.extend( state, {
+            lon: parseFloat( results[0].lon ).toFixed( 3 ),
+            lat: parseFloat( results[0].lat ).toFixed( 3 ),
+            zoom: map.geomap( 'option', 'zoom' ),
+            l: encodeURIComponent( q )
+          } );
+
+          $.bbq.pushState( state );
+
+          map.geomap( 'option', 'center', [ state.lon, state.lat ] );
+
+          if ( searchTerm ) {
+            if (currentXhr) {
+              // if there's a search pending, cancel it
+              currentXhr.abort();
+              currentXhr = null;
+            }
+
+            $("#popup").hide().html("");
+
+            autoSearch();
+          }
+        } else {
+          console.log( 'location search returned no results' );
         }
       }
     });
     return false;
   });
 
-  $( "#zoomout" ).click( function( e ) {
-    //$( "#zoom input" ).css( "visibility", "hidden" );
-    var zoom = map.geomap( "option", "zoom" );
-    if ( zoom > 5 ) {
-      window.location.search = 
-        "q=" + encodeURIComponent($("#twit input").val()) +
-        "&l=" + encodeURIComponent($("#loc input").val()) +
-        "&center=" + map.geomap( "option", "center" ) +
-        "&zoom=" + ( map.geomap( "option", "zoom" ) - 1 );
-    }
-  } );
-
-  $( "#zoomin" ).click( function( e ) {
-    //$( "#zoom input" ).css( "visibility", "hidden" );
-    var zoom = map.geomap( "option", "zoom" );
-    if ( zoom  < 16 ) {
-      window.location.search = 
-        "q=" + encodeURIComponent($("#twit input").val()) +
-        "&l=" + encodeURIComponent($("#loc input").val()) +
-        "&center=" + map.geomap( "option", "center" ) +
-        "&zoom=" + ( map.geomap( "option", "zoom" ) + 1 );
-    }
-  } );
-
   $("#twit").submit(function (e) {
     e.preventDefault();
 
-    // when the user clicks the tweet search button,
-    // send a request to twitter
+    var newSearchTerm = $("#twit input").val();
+    if ( newSearchTerm !== searchTerm ) {
+      // when the user clicks the tweet search button,
+      // start sending requests to twitter
 
-    if (currentXhr) {
-      // if there's a search pending, cancel it
-      currentXhr.abort();
-      currentXhr = null;
-    }
+      if (currentXhr) {
+        // if there's a search pending, cancel it
+        currentXhr.abort();
+        currentXhr = null;
+      }
 
-    $("#popup").hide().html("");
+      $("#popup").hide().html("");
 
-    // save our search term
-    searchTerm = $("#twit input").val();
+      // save our search term
+      searchTerm = newSearchTerm;
 
-    if ( searchTerm ) {
-      // if we have a new search term, relaunch the app to the same location with the new search
-      // this will allow users to tweet their map
-      window.location.search = 
-        "q=" + encodeURIComponent(searchTerm) +
-        "&l=" + encodeURIComponent($("#loc input").val()) +
-        "&center=" + map.geomap("option", "center").toString() +
-        "&zoom=" + ( map.geomap("option", "zoom") );
+      // clear old search term data
+      $( '.heatmap-service' ).geomap( 'empty' );
+      appendedCount = 0;
+      $("#appendedCount").text( 'no tweets mapped yet :(' );
+
+      if ( searchTerm ) {
+        var state = $.bbq.getState();
+        state.q = encodeURIComponent( searchTerm );
+        $.bbq.pushState( state );
+        autoSearch();
+      }
     }
 
     return false;
@@ -371,26 +363,12 @@ $(function () {
     }
   }
 
-  // for fun, we support sending center, zoom and a tweet query in the query string
-  var queryString = window.location.search.substring(1),
-      params = queryString.split("&"),
-      options = {};
+  var state = $.bbq.getState( );
 
-  $.each(params, function() {
-    var idx = this.indexOf("=");
-    if (idx > 0) {
-      options[this.substring(0, idx)] = this.substring(idx + 1);
-    }
-  });
-
-  if (options.center) {
-    if (options.zoom) {          
-      initMap($.parseJSON("[" + options.center + "]"), parseInt(options.zoom));
-    } else {
-      initMap($.parseJSON("[" + options.center + "]"));
-    }
+  if (state.zoom) {
+    initMap( [ parseFloat( state.lon ), parseFloat( state.lat ) ], parseInt( state.zoom ));
   } else {
-    // if there's no center in the query string, try to use geolocation
+    // if there's no center/zoom in the hash, try to use geolocation
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function (p) {
         initMap([p.coords.longitude, p.coords.latitude]);
@@ -405,8 +383,8 @@ $(function () {
 
   var title = "Twheat !";
 
-  if (options.q) {
-    searchTerm = decodeURIComponent(options.q);
+  if (state.q) {
+    searchTerm = decodeURIComponent(state.q);
     $("#twit input").val(searchTerm);
     title += " " + searchTerm;
 
@@ -415,8 +393,8 @@ $(function () {
     }
   }
 
-  if (options.l) {
-    var loc = decodeURIComponent(options.l);
+  if (state.l) {
+    var loc = decodeURIComponent(state.l);
     $("#loc input").val(loc);
     title += " " + loc;
   }
