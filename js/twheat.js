@@ -259,45 +259,7 @@ $(function () {
 
       if (window.location.host.match(/localhost/)) {
         setTimeout(function () {
-          appendTweet({
-                "created_at": "Mon May 26 01:54:09 +0000 2014",
-                "id": 470744669689618400,
-                "id_str": "470744669689618432",
-                "text": "Live tweeting from dinner with the most right-wing conservative grandparents tonight",
-                "source": "<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
-                "user": {
-                  "name": " K-10",
-                  "screen_name": "KristyKreme_13",
-                  "location": "JMU",
-                  "description": "I like animals and jokes and animal jokes",
-                  "time_zone": "Atlantic Time (Canada)",
-                  "geo_enabled": true,
-                  "lang": "en",
-                  "profile_image_url": "http://pbs.twimg.com/profile_images/466751675957387264/zsIh2fEn_normal.jpeg",
-                },
-                "geo": {
-                  "type": "Point",
-                  "coordinates": [43.6259462, -71.29408846]
-                },
-                "coordinates": {
-                  "type": "Point",
-                  "coordinates": [-71.29408846, 43.6259462]
-                },
-                "place": {
-                  "id": "226b21641df42460",
-                  "url": "https://api.twitter.com/1.1/geo/id/226b21641df42460.json",
-                  "place_type": "admin",
-                  "name": "New Hampshire",
-                  "full_name": "New Hampshire, USA",
-                  "country_code": "US",
-                  "country": "United States",
-                  "bounding_box": {
-                    "type": "Polygon",
-                    "coordinates": [[[-72.557247, 42.696978], [-70.575095, 42.696978], [-70.575095, 45.305476], [-72.557247, 45.305476]]]
-                  }
-                },
-                "lang": "en"
-              });
+          appendTweet(genTweet());
         }, 500);
       } else {
         // actually send the request to Twitter
@@ -469,5 +431,59 @@ $(function () {
 
   $("title").html(title);
   $("#tweetButton").append(twitterButtonHtml);
+
+  function genTweet() {
+    var baconIpsum = [ 'bacon', 'ipsum', 'dolor', 'sit', 'amet', 'panchetta', 'meatball', 'labore', 'in aute', 'chop' ];
+    function meat(count) {
+      count = count || 1;
+      var meatyReturn = '';
+      for ( var i = 0; i < count; i++ ) {
+        if ( i > 0 ) {
+          meatyReturn += ' ';
+        }
+        meatyReturn += baconIpsum[Math.floor(Math.random()*10)];
+      }
+      return meatyReturn;
+    }
+
+    var time = $.now();
+    var name = meat();
+    var c = map.geomap('option', 'center');
+
+    return {
+      created_at: 'Mon May 26 01:54:09 +0000 2014',
+      id: time,
+      id_str: '' + time,
+      text: meat(4),
+      source: '<a href="http://twitter.com/download/iphone" rel="nofollow">Twitter for iPhone</a>',
+      user: {
+        name: name,
+        screen_name: name,
+        location: meat(),
+        description: meat(4),
+        geo_enabled: true,
+        lang: 'en',
+        profile_image_url: 'https://pbs.twimg.com/profile_images/465542577324707840/g_YuiWA5_400x400.png',
+      },
+      geo: {
+        type: 'Point',
+        coordinates: [ c[1], c[0] ]
+      },
+      coordinates: {
+        type: 'Point',
+        coordinates: [ c[0], c[1] ]
+      },
+      place: {
+        id: '' + time,
+        place_type: 'admin',
+        name: 'Here',
+        full_name: 'Here',
+        country_code: 'US',
+        country: 'United States',
+        bounding_box: $.geo.polygonize( map.geomap('option', 'bbox' ) ) //< note: Twitter's Polygon isn't closed/valid
+      },
+      lang: 'en'
+    }
+  }
 });  
 
