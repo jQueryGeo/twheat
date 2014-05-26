@@ -9,8 +9,7 @@ $(function () {
       twitterButtonHtml = '<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-via="ryanttb">Tweet</a><script src="//platform.twitter.com/widgets.js">\x3C/script>'
       timeoutRefresh = null,
       canvas = document.createElement( 'canvas' ),
-      heatmap = null,
-      data = [];
+      heatmap = null;
 
   try {
     // heatmap test
@@ -44,6 +43,7 @@ $(function () {
             src: function( view ) {
               canvas.width = 0;
               canvas.height = 0;
+              var data = $( '.heatmap-service' ).geomap( 'find', '*' );
 
               if ( !map || !heatmap || data.length === 0 ) {
                 return canvas.toDataURL( 'image/png' );
@@ -99,17 +99,6 @@ $(function () {
         }
       },
 
-      // set the shapeStyle to a largish solid but translucent circle
-      // to give the tweets a heat map effect
-      shapeStyle: {
-        //strokeOpacity: 0,
-        fillOpacity: 1
-        //width: "16px",
-        //height: "16px",
-        //borderRadius: "16px",
-        //color: "#e44"
-      },
-
       move: function (e, geo) {
         // when the user moves, search for appended tweets
         // and show a popup
@@ -120,7 +109,7 @@ $(function () {
         if (searchTerm) {
           // spatial query, geo has the cursor location as a map point
           // this will find appended tweets within 3 pixels
-          var features = $( "#h240" ).geomap("find", geo, 31),
+          var features = $( '.heatmap-service' ).geomap("find", geo, 16),
               popupHtml = "",
               i = 0;
 
@@ -158,6 +147,8 @@ $(function () {
         }
       }
     });
+
+    $( '.heatmap-service' ).geomap( 'option', 'shapeStyle', { width: 0, height: 0 } );
 
     // set the zoom input the map's zoom
     //$( "#zoom input" ).val( map.geomap( "option", "zoom" ) ).css( "visibility", "visible" );
@@ -364,7 +355,7 @@ $(function () {
     appendedCount++;
     $("#appendedCount").text(appendedCount + " tweets mapped!");
 
-    data.push( feature );
+    $('.heatmap-service' ).geomap( 'append', feature, false );
 
     timeoutRefresh = setTimeout( function( ) {
       timeoutRefresh = null;
