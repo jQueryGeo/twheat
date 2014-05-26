@@ -6,10 +6,23 @@ $(function () {
       searching = false,
       currentXhr = null, //< an ajax request reference if we need to cancel
       
-      twitterButtonHtml = '<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-via="ryanttb">Tweet</a><script src="//platform.twitter.com/widgets.js">\x3C/script>',
+      twitterButtonHtml = '<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-via="ryanttb">Tweet</a><script src="//platform.twitter.com/widgets.js">\x3C/script>'
       timeoutRefresh = null,
       timeoutTweetsMapped = null,
-      i; // a generic counter
+      canvas = document.createElement( 'canvas' ),
+      heatmap = null,
+      data = [];
+
+  try {
+    heatmap = createWebGLHeatmap( {
+      canvas: canvas,
+      width: 640,
+      height: 480
+    } );
+  } catch ( err ) {
+    console.log( err );
+    heatmap = null;
+  }
 
   function initMap(center, zoom) {
     // create a map using an optional center and zoom
@@ -21,21 +34,42 @@ $(function () {
                 return "http://otile" + ((view.index % 4) + 1) + ".mqcdn.com/tiles/1.0.0/osm/" + view.zoom + "/" + view.tile.column + "/" + view.tile.row + ".png";
             },
             attr: "<p>Tiles Courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'></p>"
+          },
+          {
+            type: 'shingled',
+            class: 'heatmap-service',
+            style: {
+              opacity: .98
+            },
+            src: function( view ) {
+              canvas.width = 0;
+              canvas.height = 0;
+
+              if ( !map || !heatmap || data.length === 0 ) {
+                return canvas.toDataURL( 'image/png' );
+              }
+
+              // since the pixel points can change at any time,
+              // we need to keep recreating the heatmap and adding
+              // re-calculated pixel points
+              heatmap = createWebGLHeatmap( {
+                canvas: canvas,
+                width: view.width,
+                height: view.height
+              } );
+
+              for ( var i = 0, pixelPos; i < data.length; i++ ) {
+                pixelPos = map.geomap( 'toPixel', data[ i ].geometry.coordinates );
+                heatmap.addPoint( pixelPos[ 0 ], pixelPos[ 1 ], 64, 1 );
+              }
+
+              heatmap.update();
+              heatmap.display();
+              return canvas.toDataURL( 'image/png' );
+            }
           }
         ];
       
-        /*
-    for ( i = 0; i < 11; i++ ) {
-      // for each hue breakpoint, create a new shingled service
-      // later, we will put tweets in these depending on how many other tweets around
-      services.push( {
-        id: "h" + ( 240 - ( i * 24 ) ),
-        type: "shingled",
-        src: ""
-      } );
-    }
-    */
-
     map = $("#map").geomap({
       center: center || [-71.0597732, 42.3584308],
       zoom: zoom || 10,
@@ -124,22 +158,6 @@ $(function () {
         }
       }
     });
-
-    for ( i = 0; i < 11; i++ ) {
-      // for each hue service, set the shapeStyle based on
-      // the number of tweets required before a new level is reached
-      // for example, the "hot" layer is tiny and red
-      var hue = 240 - ( i * 24 ),
-          impact = ( hue + 16) / 2 - Math.floor( i / 2 );
-          //impact = hue + 16;
-      $( "#h" + hue ).geomap( "option", "shapeStyle", { 
-        color: "hsl(" + hue + ",100%,50%)",
-        width: impact,
-        height: impact,
-        borderRadius: impact,
-        fillOpacity: 1
-      } );
-    }
 
     // set the zoom input the map's zoom
     //$( "#zoom input" ).val( map.geomap( "option", "zoom" ) ).css( "visibility", "visible" );
@@ -258,17 +276,15 @@ $(function () {
       $("#ajaxIndicator").css("visibility", "visible");
 
       if (window.location.host.match(/localhost/)) {
-        setTimeout(function () {
-          appendTweet(genTweet());
-        }, 500);
+        appendTweet(genTweet());
       } else {
         // actually send the request to Twitter
         currentXhr = $.ajax({
           url: "search.php",
           data: {
             rpp: 100,
-            q: lastSearchTerm//,
-            //geocode: geocode.join(",")
+            q: lastSearchTerm,
+            geocode: geocode.join(",")
           },
           dataType: "json",
           complete: function (result) {
@@ -286,7 +302,7 @@ $(function () {
               $("#ajaxIndicator").css("visibility", "hidden");
             }, 1000);
           },
-          error: function (er) {
+          error: function ( err ) {
             // oops, Twitter search failed
             $("#ajaxIndicator").css("visibility", "hidden");
           }
@@ -339,14 +355,17 @@ $(function () {
     // pick the appropriate hue service based on number of tweets around
     // and add this tweet to EACH hue service up to that point
     // this will add a bunch of bubbles per tweet as more tweets are found
+    /*
     if ( timeoutRefresh ) {
       clearTimeout( timeoutRefresh );
       timeoutRefresh = null;
     }
+    */
 
+    /*
     var searchService = $( "#h240" );
 
-    for ( var i = 0; i < 11; i++ ) {
+    for ( i = 0; i < 11; i++ ) {
       var hue = 240 - ( i * 24 ),
           hueService = $( "#h" + hue ),
           impact = ( hue + 16) / 2 - Math.floor( i / 2 ), //hue + 16 - i,
@@ -359,16 +378,22 @@ $(function () {
         break;
       }
     }
+    */
 
     // even though we may have appended four shapes for a medium hotness
     // tweet, we have only processed one actual tweet, update appendedCount & UI
     appendedCount++;
     $("#appendedCount").text(appendedCount + " tweets mapped!");
 
+    data.push( feature );
+    $( '.heatmap-service' ).geomap( 'refresh' );
+
+    /*
     timeoutRefresh = setTimeout( function( ) {
       timeoutRefresh = null;
-      map.geomap( "refresh" );
-    }, 1000 );
+      $('.heatmap-service' ).geomap( 'refresh' );
+    }, 500 );
+    */
   }
 
   function autoSearch() {
@@ -471,7 +496,7 @@ $(function () {
       },
       coordinates: {
         type: 'Point',
-        coordinates: [ c[0] - Math.random()/2, c[1] + Math.random()/2 ]
+        coordinates: [ c[0] + Math.random()/2, c[1] + Math.random()/2 ]
       },
       place: {
         id: '' + time,
