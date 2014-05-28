@@ -6,7 +6,7 @@ $(function () {
       searching = false,
       currentXhr = null, //< an ajax request reference if we need to cancel
       
-      twitterButtonHtml = '<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-via="ryanttb">Tweet</a><script src="//platform.twitter.com/widgets.js">\x3C/script>'
+      twitterButtonHtml = '<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-via="ryanttb">Tweet</a>',
       timeoutRefresh = null,
       canvas = document.createElement( 'canvas' ),
       heatmap = null;
@@ -381,26 +381,38 @@ $(function () {
     }
   }
 
-  var title = "Twheat !";
+  $( window ).on( 'hashchange', function( ) {
+    var state = $.bbq.getState( );
 
-  if (state.q) {
-    searchTerm = decodeURIComponent(state.q);
-    $("#twit input").val(searchTerm);
-    title += " " + searchTerm;
+    var title = "Twheat !";
 
-    if ( map !== null && !searching ) {
-      autoSearch();
+    if (state.q) {
+      searchTerm = decodeURIComponent(state.q);
+      $("#twit input").val(searchTerm);
+      title += " " + searchTerm;
+
+      // todo delete old searchTerm tweets
+      if ( map !== null && !searching ) {
+        autoSearch();
+      }
     }
-  }
 
-  if (state.l) {
-    var loc = decodeURIComponent(state.l);
-    $("#loc input").val(loc);
-    title += " " + loc;
-  }
+    if (state.l) {
+      var loc = decodeURIComponent(state.l);
+      $("#loc input").val(loc);
+      title += " in " + loc;
+    }
 
-  $("title").html(title);
-  $("#tweetButton").append(twitterButtonHtml);
+    $("title").html(title);
+    $("#tweetButton").html('');
+    setTimeout( function( ) {
+      twitterButtonHtml = '<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-url="' + window.location.toString() + '" data-text="' + title + '" data-via="ryanttb">Tweet</a>';
+      $("#tweetButton").append(twitterButtonHtml);
+      twttr.widgets.load();
+    }, 400 );
+  } );
+
+  $( window ).trigger( 'hashchange' );
 
   function genTweet() {
     var baconIpsum = [ 'bacon', 'ipsum', 'dolor', 'sit', 'amet', 'panchetta', 'meatball', 'labore', 'in aute', 'chop' ];
