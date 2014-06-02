@@ -6,7 +6,6 @@ $(function () {
       searching = false,
       currentXhr = null, //< an ajax request reference if we need to cancel
       
-      twitterButtonHtml = '<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-via="ryanttb">Tweet</a>',
       timeoutRefresh = null,
       canvas = document.createElement( 'canvas' ),
       heatmap = null;
@@ -406,10 +405,10 @@ $(function () {
     $("title").html(title);
     $("#tweetButton").html('');
     setTimeout( function( ) {
-      twitterButtonHtml = '<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-url="' + window.location.toString() + '" data-text="' + title + '" data-via="ryanttb">Tweet</a>';
+      twitterButtonHtml = '<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-url="' + window.location.toString() + '" data-text="' + title + '" data-via="jQueryGeo"></a>';
       $("#tweetButton").append(twitterButtonHtml);
       twttr.widgets.load();
-    }, 400 );
+    }, 66 );
   } );
 
   $( window ).trigger( 'hashchange' );
