@@ -49,7 +49,7 @@ h1
   margin-right: 256px;
 }
 
-.two
+.version
 {
   color: #7f0000;
 }
@@ -139,4 +139,19 @@ h2
   margin: 1em;
   padding: .5em;
   width: 256px;
+}
+
+.broken-twitter .close {
+  border: solid 1px #ffd;
+  color: #222;
+  display: block;
+  float: right;
+  height: 1.4em;
+  text-align: center;
+  text-decoration: none;
+  width: 1.2em;
+}
+
+.broken-twitter .close:hover {
+  border: solid 1px #dedede;
 }

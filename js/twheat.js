@@ -411,6 +411,15 @@ $(function () {
     }, 66 );
   } );
 
+  $( '.broken-twitter .close' ).click( function( ) {
+    $( '.broken-twitter' ).remove();
+    window.localStorage.setItem( 'hide-broken-twitter', true );
+  } );
+
+  if ( window.localStorage.getItem( 'hide-broken-twitter' ) ) {
+    $( '.broken-twitter' ).remove();
+  }
+
   $( window ).trigger( 'hashchange' );
 
   function genTweet() {
