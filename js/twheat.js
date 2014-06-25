@@ -413,10 +413,12 @@ $(function () {
 
   $( '.broken-twitter .close' ).click( function( ) {
     $( '.broken-twitter' ).remove();
-    window.localStorage.setItem( 'hide-broken-twitter', true );
+    if ( 'localStorage' in window ) {
+      window.localStorage.setItem( 'hide-broken-twitter', true );
+    }
   } );
 
-  if ( window.localStorage.getItem( 'hide-broken-twitter' ) ) {
+  if ( 'localStorage' in window && window.localStorage.getItem( 'hide-broken-twitter' ) ) {
     $( '.broken-twitter' ).remove();
   }
 
