@@ -22,6 +22,49 @@ $(function () {
     heatmap = null;
   }
 
+  function heatmapService() {
+    return heatmap ? {
+        type: 'shingled',
+        "class": 'heatmap-service',
+        style: {
+          opacity: .98
+        },
+        src: function( view ) {
+          if ( heatmap ) {
+            canvas.width = 0;
+            canvas.height = 0;
+            var data = $( '.heatmap-service' ).geomap( 'find', '*' );
+
+            if ( !map || !heatmap || data.length === 0 ) {
+              return canvas.toDataURL( 'image/png' );
+            }
+
+            // since the pixel points can change at any time,
+            // we need to keep recreating the heatmap and adding
+            // re-calculated pixel points
+            heatmap = createWebGLHeatmap( {
+              canvas: canvas,
+              width: view.width,
+              height: view.height
+            } );
+
+            for ( var i = 0, pixelPos; i < data.length; i++ ) {
+              pixelPos = map.geomap( 'toPixel', data[ i ].geometry.coordinates );
+              heatmap.addPoint( pixelPos[ 0 ], pixelPos[ 1 ], 64, 1 );
+            }
+
+            heatmap.update();
+            heatmap.display();
+            return canvas.toDataURL( 'image/png' );
+          }
+        }
+      } : {
+        type: 'shingled',
+        "class": 'heatmap-service',
+        src: ''
+      };
+  }
+
   function initMap(center, zoom) {
     // create a map using an optional center and zoom
     // we're re-adding the default basemap because we're adding extra services on top of it
@@ -33,40 +76,7 @@ $(function () {
         },
         attr: "<p>Tiles Courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'></p>"
       },
-      {
-        type: 'shingled',
-        class: 'heatmap-service',
-        style: {
-          opacity: .98
-        },
-        src: function( view ) {
-          canvas.width = 0;
-          canvas.height = 0;
-          var data = $( '.heatmap-service' ).geomap( 'find', '*' );
-
-          if ( !map || !heatmap || data.length === 0 ) {
-            return canvas.toDataURL( 'image/png' );
-          }
-
-          // since the pixel points can change at any time,
-          // we need to keep recreating the heatmap and adding
-          // re-calculated pixel points
-          heatmap = createWebGLHeatmap( {
-            canvas: canvas,
-            width: view.width,
-            height: view.height
-          } );
-
-          for ( var i = 0, pixelPos; i < data.length; i++ ) {
-            pixelPos = map.geomap( 'toPixel', data[ i ].geometry.coordinates );
-            heatmap.addPoint( pixelPos[ 0 ], pixelPos[ 1 ], 64, 1 );
-          }
-
-          heatmap.update();
-          heatmap.display();
-          return canvas.toDataURL( 'image/png' );
-        }
-      }
+      heatmapService()
     ];
   
     map = $("#map").geomap({
@@ -402,7 +412,12 @@ $(function () {
       title += " in " + loc;
     }
 
-    $("title").html(title);
+    try {
+      $("title").html(title);
+    } catch ( err ) {
+      // I don't know why this throws in IE8
+    }
+
     $("#tweetButton").html('');
     setTimeout( function( ) {
       twitterButtonHtml = '<a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-url="' + window.location.toString() + '" data-text="' + title + '" data-via="jQueryGeo"></a>';

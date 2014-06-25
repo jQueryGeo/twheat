@@ -54,11 +54,15 @@ textureFloatShims = function() {
     canvas = document.createElement('canvas');
     canvas.width = 2;
     canvas.height = 2;
-    ctx = canvas.getContext('2d');
-    imageData = ctx.getImageData(0, 0, 2, 2);
-    imageData.data.set(new Uint8ClampedArray([0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255, 255]));
-    ctx.putImageData(imageData, 0, 0);
-    return canvas;
+    ctx = 'getContext' in canvas ? canvas.getContext('2d') : null;
+    if ( ctx ) {
+      imageData = ctx.getImageData(0, 0, 2, 2);
+      imageData.data.set(new Uint8ClampedArray([0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255, 255]));
+      ctx.putImageData(imageData, 0, 0);
+      return canvas;
+    } else {
+      return null;
+    }
   };
   createSourceCanvas();
   checkFloatLinear = function(gl, sourceType) {
