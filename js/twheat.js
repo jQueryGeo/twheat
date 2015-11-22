@@ -168,8 +168,9 @@ $(function () {
     // when the user clicks the location search button,
     // send a request to nominatim for an OpenStreatMap data search
     $.ajax({
-      url: "http://open.mapquestapi.com/nominatim/v1/search",
+      url: "http://open.mapquestapi.com/nominatim/v1/search.php",
       data: {
+        key: 'BwKAyEHPAn8jRH1GO0c0UEAev68xpcsv',
         format: "json",
         q: q
       },
