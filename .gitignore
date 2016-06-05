@@ -2,3 +2,5 @@
 *.swo
 *.php
 *.db
+node_modules
+jspm_packages
