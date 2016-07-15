@@ -19,6 +19,7 @@ System.config({
     "core-js": "npm:core-js@1.2.6",
     "jquery": "npm:jquery@2.2.4",
     "jquery.geo": "npm:jquery.geo@1.0.0-rc1.2.1",
+    "urijs": "npm:urijs@1.18.1",
     "webgl-heatmap": "npm:webgl-heatmap@0.2.3",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.4.1"
@@ -256,6 +257,9 @@ System.config({
       "readable-stream": "npm:readable-stream@2.0.6",
       "util": "github:jspm/nodelibs-util@0.1.0",
       "xtend": "npm:xtend@4.0.1"
+    },
+    "npm:urijs@1.18.1": {
+      "process": "github:jspm/nodelibs-process@0.1.2"
     },
     "npm:util-deprecate@1.0.2": {
       "util": "github:jspm/nodelibs-util@0.1.0"
