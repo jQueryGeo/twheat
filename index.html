@@ -48,12 +48,15 @@
       <h2>A Twitter Heat Map</h2>
     </div>
   </div>
-  <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-  <script src="http://code.jquerygeo.com/jquery.geo-1.0.0-b2.min.js"></script>
-  <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-  <script src="js/jquery.ba-bbq.js"></script>
+  <script src="jspm_packages/system.js"></script>
+  <script src="config.js"></script>
+  <script>
+    System.import( 'lib/main' );
+  </script>
+
+  <!--script src="js/jquery.ba-bbq.js"></script>
   <script src="js/webgl-heatmap.js"></script>
-  <script src="js/twheat.js"></script>
+  <script src="js/twheat.js"></script-->
 
   <script src="//platform.twitter.com/widgets.js"></script>
   <script>
